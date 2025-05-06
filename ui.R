@@ -1,12 +1,9 @@
-# Check and install required packages
-required_packages <- c("shiny", "shinyjs", "shinyWidgets",
-                       "VGAM", "AccSamplingDesign")
 
-for (pkg in required_packages) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    install.packages(pkg)
-  }
-}
+# for (pkg in required_packages) {
+#   if (!requireNamespace(pkg, quietly = TRUE)) {
+#     install.packages(pkg)
+#   }
+# }
 
 # Load libraries
 library(shiny)

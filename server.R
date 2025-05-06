@@ -1,6 +1,6 @@
 source("beta_plan_lib.R")
-library(VGAM)
-library(DT)
+require(VGAM)
+require(DT)
 
 # Function to find a optimal  sampling plan
 find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA, 
@@ -30,9 +30,11 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
     #                       grid_step = c(0.5, 0.02))
     if (is.null(plan))   return(NULL) 
     
-    plots <- plot_OC_curve_ggplot(plan$sample_size, plan$k, 
-                                  theta, SL, limtype, uom, uom_mapping, 
-                                  plan$PRQ, plan$PR, plan$CRQ, plan$CR)
+    # plots <- plot_OC_curve_ggplot(plan$sample_size, plan$k, 
+    #                               theta, SL, limtype, uom, uom_mapping, 
+    #                               plan$PRQ, plan$PR, plan$CRQ, plan$CR)
+    
+    plots <- plot_OC_curve(plan, uom, uom_mapping)
     
     opt_table_data <- data.frame(
       # Ensures scientific notation
@@ -90,6 +92,22 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
 }
 
 shinyServer(function(input, output, session) { 
+  
+  # Check required packages
+  required_pkg <- c("shiny", "shinyjs", "shinyWidgets", "VGAM", "AccSamplingDesign")
+  
+  missing_pkgs <- required_pkg[!sapply(required_pkg, requireNamespace, quietly = TRUE)]
+  
+  if (length(missing_pkgs) > 0) {
+    showModal(modalDialog(
+      title = "Missing Package(s)",
+      paste("R package(s) are required but not installed:", 
+            paste(missing_pkgs, collapse = ", ")),
+      easyClose = TRUE
+    ))
+    return()  # Stop app initialization if packages are missing
+  }
+  
   processing <- reactiveVal(FALSE)
   plan <- NULL
   

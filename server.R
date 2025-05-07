@@ -107,6 +107,15 @@ shinyServer(function(input, output, session) {
   processing <- reactiveVal(FALSE)
   plan <- NULL
   
+  observeEvent(input$compare_plan, {
+    if (input$compare_plan) {
+      if (packageVersion("AccSamplingDesign") < "0.0.2") {
+        shinyjs::alert("Please update the 'AccSamplingDesign' package to version 0.0.2 or higher to use this feature.")
+        updateCheckboxInput(session, "compare_plan", value = FALSE)
+      }
+    }
+  })
+  
   observeEvent(input$find_plan, {
     shinyjs::show("loading_div")
     shinyjs::hide("find_plan")

@@ -7,9 +7,8 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
                               distribution = c("Beta", "Normal"),
                               limtype = c("lower", "upper"), uom, uom_mapping,
                               me_adjust_enabled = NA, me_type = NA, 
-                              r = NA, R = NA, sdtype) 
-  {
-  
+                              r = NA, R = NA, sdtype = "known", 
+                              eval_plan = NULL) {
   distribution <- "Beta"
   limtype <- match.arg(limtype)
   
@@ -30,11 +29,7 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
     #                       grid_step = c(0.5, 0.02))
     if (is.null(plan))   return(NULL) 
     
-    # plots <- plot_OC_curve_ggplot(plan$sample_size, plan$k, 
-    #                               theta, SL, limtype, uom, uom_mapping, 
-    #                               plan$PRQ, plan$PR, plan$CRQ, plan$CR)
-    
-    plots <- plot_OC_curve(plan, uom, uom_mapping,
+    plots <- plot_OC_curve(plan, uom, uom_mapping, eval_plan,
                            p_seq = seq(0.005, 0.20, by = 0.005))
     
     opt_table_data <- data.frame(
@@ -124,9 +119,12 @@ shinyServer(function(input, output, session) {
     start_time <- Sys.time()
 
     #details of plan to be evaluated
-    meval=input$meval
-    keval=input$keval
-    
+    eval_plan <- list(
+      meval = input$meval,
+      keval = input$keval,
+      compare_plan_checked = input$compare_plan
+    )
+  
     # Parameter reading and plan calculation remains the same
     SL= input$sl_value #divide by uom
     theta= input$theta_value
@@ -137,7 +135,7 @@ shinyServer(function(input, output, session) {
     beta= input$CR
     #distribution = input$distribution
     #sdtype = tolower(input$sdtype) # This set sigma/theta known or unknown
-    sdtype="Known"
+    sdtype="known"
     limtype= tolower(input$sl_type)
     # me_adjust_enabled = input$me_toggle
     # me_type = input$me_type
@@ -157,16 +155,14 @@ shinyServer(function(input, output, session) {
       uom_mapping = input$custom_uom_mapping
     } else {
       uom=input$uom
-      }
+    }
 
     SL=SL/uom_mapping
     
     # Now find and optimal plan base on input parameters
-    opt_plan <- find_optimal_plan(p1, alpha, p2, beta, SL,
-                                  sigma, theta, 
-                                  distribution, limtype,uom,uom_mapping,
-                                  me_adjust_enabled, me_type,
-                                  r, R, sdtype)
+    opt_plan <- find_optimal_plan(p1, alpha, p2, beta, SL, sigma, theta,
+                                  distribution, limtype, uom, uom_mapping,
+                                  sdtype = sdtype, eval_plan = eval_plan)
     
     # End count processing time
     elapsed_time <- round(difftime(Sys.time(), start_time, units = "secs"), 2)
@@ -246,11 +242,29 @@ shinyServer(function(input, output, session) {
                  )
                )
       ),
-      tabPanel("Risk settings",
-        
+      tabPanel("Plan Settings",
+               h4(""),
                sliderInput("PR", "PR (Producer's Risk)", min = 0, max = 0.10, value = 0.05, step = 0.01),
                sliderInput("CR", "CR (Consumer's Risk)", min = 0, max = 0.20, value = 0.10, step = 0.01),
-        ),
+               
+               selectInput(
+                 "uom", "Units of Measurement:",
+                 c(
+                   "proportion",
+                   "parts per hundred (%)",
+                   "parts per million (ppm)",
+                   "parts per billion (ppb)",
+                   "parts per trillion (ppt)",
+                   "custom"
+                 )
+               ),
+               # if custom, define label and mapping
+               conditionalPanel(
+                 condition = "input.uom == 'custom'",
+                 textInput("custom_uom_label", "Unit label", value = "microgram per 100g (μg/100g)"),
+                 numericInput("custom_uom_mapping", "Mapping from 0-1 scale to measurement scale:", value = 1e8)
+               ),
+      ),
       
       tabPanel("Parameter Estimation", 
                 br(), 

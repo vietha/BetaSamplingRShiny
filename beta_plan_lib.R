@@ -8,7 +8,7 @@ plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
   p2 <- plan$CRQ
   alpha <- plan$PR
   beta <- plan$CR
-  
+  m <- round(plan$m, 3)
   # estimate mu from PRQ/CRQ
   mu1 <- muEst(plan$PRQ, USL = plan$USL, LSL = plan$LSL, 
                theta = plan$theta, dist = plan$distribution)
@@ -34,7 +34,7 @@ plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
     geom_line(color = "blue", linewidth = 1) +
     geom_vline(xintercept = 100 * c(p1, p2), linetype = "dashed", color = "gray60") +
     geom_hline(yintercept = 100 * c(1 - alpha, beta), linetype = "dashed", color = "gray60") +
-    labs(title = paste("OC Curve by Nonconforming Proportion (m =", plan$m, "k =", round(plan$k,3), ")"),
+    labs(title = paste("OC Curve by Nonconforming Proportion (m =", m, "k =", round(plan$k,3), ")"),
          x = "Percentage Nonconforming (%)", 
          y = "Probability of Acceptance (%)") +
     theme_minimal()
@@ -45,7 +45,7 @@ plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
     geom_line(color = "red", linewidth = 1) + 
     geom_hline(yintercept = 100 * c(1 - alpha, beta), linetype = "dashed", color = "gray60") +
     geom_vline(xintercept = c(mu1, mu2), linetype = "dashed", color = "gray60") +
-    labs(title = paste("OC Curve by Mean Levels (m =", plan$m, "k =", round(plan$k,3), ")"),
+    labs(title = paste("OC Curve by Mean Levels (m =", m, "k =", round(plan$k,3), ")"),
          x = paste("Mean Level -", uom),
          y = "Probability of Acceptance (%)") +
     theme_minimal()

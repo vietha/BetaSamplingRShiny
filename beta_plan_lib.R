@@ -13,8 +13,10 @@ plot_OC_curve <- function(plan, uom, uom_mapping,
   # estimate mu from PRQ/CRQ
   mu1 <- muEst(plan$PRQ, USL = plan$USL, LSL = plan$LSL, 
                theta = plan$theta, dist = plan$distribution)
+  mu1 <- mu1*uom_mapping # make sure follow unit define
   mu2 <- muEst(plan$CRQ, USL = plan$USL, LSL = plan$LSL,  
                theta = plan$theta, dist = plan$distribution)   
+  mu2 <- mu2*uom_mapping # make sure follow unit define
   
   plan_data <- OCdata(plan, pd = p_seq)
   p_seq <- plan_data@pd

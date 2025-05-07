@@ -1,0 +1,95 @@
+---
+title: "Sampling Plans"
+output:
+  html_document:
+    mathjax: default
+---
+
+Compositional fractions can be modeled using the beta distribution, which is commonly used as a **prior distribution for the proportion nonconforming** in quality control literature. However, designing **sampling inspection plans** based on the beta distribution can be highly useful in food quality assurance, where many quality characteristics are naturally expressed as fractions.
+
+### Sampling Plans for the Mean Compositional Fraction
+
+Let \( X \), the compositional fraction in unit mass (g), follow a beta distribution. The probability density function is:
+
+\[
+f(x; a, b) = \frac{1}{\mathrm{B}(a, b)} x^{a-1} (1 - x)^{b - 1}, \quad 0 < x < 1,\ a > 0,\ b > 0 \tag{1}
+\]
+
+where \( \mathrm{B}(a, b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a + b)} \) is the beta function.
+
+This distribution is often reparameterized in terms of:
+
+- The mean \( \mu = \mathbb{E}(X) = \frac{a}{a + b} \),
+- The **precision parameter** \( \theta = a + b \),
+
+which gives the alternative form:  
+\[
+X \sim \mathrm{Beta}(\mu \theta, (1 - \mu)\theta) \tag{2}
+\]
+
+For large \( \theta \), the variance simplifies to:  
+\[
+\mathrm{Var}(X) \approx \frac{\mu(1 - \mu)}{\theta + 1} \tag{3}
+\]
+
+The beta distribution is flexible due to its two shape parameters, allowing it to model left-skewed, right-skewed, and symmetric data—unlike the normal distribution, which has a fixed bell shape. While the individual beta parameters \( a \) and \( b \) may lack direct physical interpretation, their sum \( \theta = a + b \) serves as an inverse measure of variability in the quality characteristic.
+
+### Sampling Plans for Proportion Nonconforming
+
+Variables sampling plans that control the **proportion nonconforming** \( p \) are more common than those focusing only on the mean. The value of \( p \) depends on the **specification limits**, either:
+
+- Lower specification limit \( L \), or
+- Upper specification limit \( U \),
+
+and is defined as:
+
+\[
+p = \Pr(X < L \mid \mu, \theta) \quad \text{or} \quad p = \Pr(X > U \mid \mu, \theta) \tag{4}
+\]
+
+Suppose we estimate the mean \( \hat{\mu} \) from a sample of size \( G \). Then, the estimated nonconformance is:
+
+\[
+\hat{p} = \Pr(X < L \mid \hat{\mu}, \theta) \tag{5}
+\]
+
+A common acceptance criterion is:
+
+\[
+\hat{\mu} - k \hat{\sigma} > L \tag{6}
+\]
+
+or
+
+\[
+\hat{\mu} + k \hat{\sigma} < U \tag{7}
+\]
+
+where \( \hat{\sigma} \approx \sqrt{ \hat{\mu}(1 - \hat{\mu}) / \theta } \) is the estimated standard deviation based on the beta parameters. Note that \( \hat{\sigma} \) is different from the sample standard deviation \( S \), as it depends only on \( \hat{\mu} \) and \( \theta \).
+
+Because the sampling distribution of the test statistic (e.g., \( \hat{\mu} - k \hat{\sigma} \)) does not follow a known distribution, we use **Monte Carlo simulation** to evaluate the operating characteristic (OC) curve.
+
+To determine the sampling plan, we set the following design conditions:
+
+- \( p_1 \): Acceptance Quality Limit (AQL)
+- \( p_2 \): Limiting Quality Level (LQL)
+- \( \alpha \): Producer's risk (rejecting a good lot)
+- \( \beta \): Consumer's risk (accepting a bad lot)
+
+The OC function is then:
+
+\[
+P_a(p) = \Pr( \hat{\mu} - k \hat{\sigma} > L \mid \mu, \theta, k, G ) \tag{8}
+\]
+
+We choose \( G \) (or \( m \)) and \( k \) such that:
+
+\[
+P_a(p_1) = 1 - \alpha, \quad P_a(p_2) = \beta \tag{9}
+\]
+
+Here, \( G \) controls variability in \( \hat{\mu} \) and \( \hat{\sigma} \), while \( k \) primarily determines the achieved risks.
+
+For known \( \theta \) and upper specification limit \( U \), we can determine the corresponding mean values \( \mu_1 \) and \( \mu_2 \) that achieve the desired levels \( p_1 \) and \( p_2 \).
+
+

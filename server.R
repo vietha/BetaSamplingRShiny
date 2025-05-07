@@ -34,7 +34,8 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
     #                               theta, SL, limtype, uom, uom_mapping, 
     #                               plan$PRQ, plan$PR, plan$CRQ, plan$CR)
     
-    plots <- plot_OC_curve(plan, uom, uom_mapping)
+    plots <- plot_OC_curve(plan, uom, uom_mapping,
+                           p_seq = seq(0.005, 0.20, by = 0.005))
     
     opt_table_data <- data.frame(
       # Ensures scientific notation
@@ -258,8 +259,14 @@ shinyServer(function(input, output, session) {
                DTOutput("dataPreview"),
                br(),
                h4("Estimated value of theta"),
+               textOutput("theta")),
       
-      textOutput("theta"))
+      tabPanel("Help",
+               tags$iframe(
+                 src = "help_page.html",  # must be inside www/
+                 style = "width:100%;height:800px;border:none;"
+               )
+      )
     )
   
    do.call(tabsetPanel, c(id = "tabs", tabs))

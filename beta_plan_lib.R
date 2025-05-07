@@ -2,7 +2,8 @@ require(AccSamplingDesign)
 require(ggplot2)
 
 # Function to plot OC curves, could define custom p_seq
-plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
+plot_OC_curve <- function(plan, uom, uom_mapping, 
+                          eval_plan = NULL, p_seq = NULL) {
   
   p1 <- plan$PRQ
   p2 <- plan$CRQ
@@ -28,30 +29,55 @@ plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
     mu_level = uom_mapping*mu_seq, 
     pa = 100 * pa_seq               # Convert to percentage
   )
-  
+
   # First OC Curve: Percentage Nonconforming vs Probability of Acceptance
   plot1 <- ggplot(plot_data, aes(x = p_nonconforming, y = pa)) +
-    geom_line(color = "blue", linewidth = 1) +
+    geom_line(aes(color = "Designed Plan"), linewidth = 1) +
     geom_vline(xintercept = 100 * c(p1, p2), linetype = "dashed", color = "gray60") +
     geom_hline(yintercept = 100 * c(1 - alpha, beta), linetype = "dashed", color = "gray60") +
     labs(title = paste("OC Curve by Nonconforming Proportion (m =", m, "k =", round(plan$k,3), ")"),
          x = "Percentage Nonconforming (%)", 
          y = "Probability of Acceptance (%)") +
-    theme_minimal()
+    theme_minimal() +
+    theme(legend.position = "bottom")
   
   #uom
   # Second OC Curve: Average Level (ppm) vs Probability of Acceptance
   plot2 <- ggplot(plot_data, aes(x = mu_level, y = pa)) +
-    geom_line(color = "red", linewidth = 1) + 
+    geom_line(aes(color = "Designed Plan"), linewidth = 1) + 
     geom_hline(yintercept = 100 * c(1 - alpha, beta), linetype = "dashed", color = "gray60") +
     geom_vline(xintercept = c(mu1, mu2), linetype = "dashed", color = "gray60") +
     labs(title = paste("OC Curve by Mean Levels (m =", m, "k =", round(plan$k,3), ")"),
          x = paste("Mean Level -", uom),
          y = "Probability of Acceptance (%)") +
-    theme_minimal()
+    theme_minimal() +
+    theme(legend.position = "bottom")
   
   # Third chart
   #plot3 <- plot_beta_distributions(p1, p2, limit, theta, limtype) 
+  
+  if (eval_plan$compare_plan_checked) {
+    # generate eval plan data
+    eval_pdata <-  OCdata(n = eval_plan$meval, k = eval_plan$keval,
+                          PRQ = p1, CRQ = p2, alpha = alpha, beta = beta,
+                          distribution = "beta", USL = plan$USL, LSL = plan$LSL,
+                          theta = plan$theta, pd = p_seq)
+    #print(eval_pdata)
+    eval_p_seq <- eval_pdata@pd
+    eval_mu_seq <- eval_pdata@process_means
+    eval_pa_seq <- eval_pdata@paccept
+    
+    plot1 <- plot1 +
+      geom_line(aes(x = 100 * eval_p_seq, 
+                    y = 100 * eval_pa_seq, 
+                    color = "Evaluated Plan"),
+                linetype = "dashed", linewidth = 1)
+    plot2 <- plot2 +
+      geom_line(aes(x = uom_mapping*eval_mu_seq, 
+                    y = 100 * eval_pa_seq, 
+                    color = "Evaluated Plan"),
+                linetype = "dashed", linewidth = 1)
+  }
   
   return(list(p1 = plot1, p2 = plot2))#, p3 = plot3))
 }

@@ -2,8 +2,7 @@ require(AccSamplingDesign)
 require(ggplot2)
 
 # Function to plot OC curves, could define custom p_seq
-plot_OC_curve <- function(plan, uom, uom_mapping, 
-                          p_seq = seq(0.005, 0.20, by = 0.005)) {
+plot_OC_curve <- function(plan, uom, uom_mapping, p_seq = NULL) {
   
   p1 <- plan$PRQ
   p2 <- plan$CRQ

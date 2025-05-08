@@ -325,7 +325,7 @@ shinyServer(function(input, output, session) {
       tags$h4("Estimated value of theta:"),
       tags$div(
         style = "font-size: 1.8em; font-weight: bold; color: #2c3e50;",
-        paste("θ =", theta)
+        paste("θ ≈", theta)
       )
     )
   })

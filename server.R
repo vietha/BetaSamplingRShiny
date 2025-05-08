@@ -156,6 +156,7 @@ shinyServer(function(input, output, session) {
       input$uom == "parts per hundred (%)" ~ 100,
       input$uom == "parts per million (ppm)" ~ 1e6,
       input$uom == "parts per billion (ppb)" ~ 1e9,
+      input$uom == "parts per trillion (ppt)" ~ 1e12,
     )
 
     if (input$uom == 'custom') {
@@ -166,7 +167,6 @@ shinyServer(function(input, output, session) {
     }
 
     SL <- SL / uom_mapping
-
     opt_plan <- find_optimal_plan(p1, alpha, p2, beta, SL, sigma, theta,
                                   distribution = NULL, limtype, uom, uom_mapping,
                                   sdtype = sdtype, eval_plan = eval_plan)
@@ -426,7 +426,8 @@ shinyServer(function(input, output, session) {
       input$uom == "custom" ~ as.double(input$custom_uom_mapping),
       input$uom == "parts per hundred (%)" ~ 100,
       input$uom == "parts per million (ppm)" ~ 1e6,
-      input$uom == "parts per billion (ppb)" ~ 1e9,)
+      input$uom == "parts per billion (ppb)" ~ 1e9,
+      input$uom == "parts per trillion (ppt)" ~ 1e12,)
     bdata <- data.frame(y = df[,1]/uom_mapping, shape1 = exp(0), shape2 = exp(1))
     fit1 <- vglm(y ~ 1, betaff, data = bdata, trace = FALSE)
     theta=Coef(fit1)[2] # Useful for intercept-only models

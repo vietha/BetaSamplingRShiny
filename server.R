@@ -30,9 +30,10 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
     #                       grid_step = c(0.5, 0.02))
     if (is.null(plan))   return(NULL) 
     
+
     plots <- plot_OC_curve(plan, uom, uom_mapping, eval_plan,
-                           p_seq = seq(0.005, 0.20, by = 0.005))
-    
+                             p_seq = seq(0.005, p2*1.5, by = 0.005))
+
     opt_table_data <- data.frame(
       # Ensures scientific notation
       SL = if (SL < 1e-4 || SL > 1e+4) 
@@ -126,10 +127,10 @@ shinyServer(function(input, output, session) {
       req(input$custom_uom_mapping, input$custom_uom_label)
     }
 
-    shinyjs::show("loading_div")
-    shinyjs::hide("planOptTable")
-    shinyjs::hide("ocTabs")
-    shinyjs::hide("found_plan")
+    #shinyjs::show("loading_div")
+    # shinyjs::hide("planOptTable")
+    # shinyjs::hide("ocTabs")
+    # shinyjs::hide("found_plan")
     processing(TRUE)
 
     start_time <- Sys.time()
@@ -194,9 +195,9 @@ shinyServer(function(input, output, session) {
 
       processing(FALSE)
       shinyjs::hide("loading_div")
-      shinyjs::hide("planOptTable")
-      shinyjs::hide("ocTabs")
-      shinyjs::hide("found_plan")
+      # shinyjs::hide("planOptTable")
+      # shinyjs::hide("ocTabs")
+      # shinyjs::hide("found_plan")
     } else {
       plots <- opt_plan$plots
       opt_table_data <- opt_plan$opt_table_data

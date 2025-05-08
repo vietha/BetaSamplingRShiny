@@ -122,6 +122,17 @@ shinyServer(function(input, output, session) {
     req(input$sl_value, input$theta_value, input$PRQ, input$CRQ,
         input$PR, input$CR, input$sl_type, input$uom)
 
+    # Validate that SL > 0
+    if (input$PRQ <= 0) {
+      showModal(modalDialog(
+        title = "Input Error",
+        "PRQ must be greater than 0.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(NULL)  # Exit reactive early
+    }
+    
     # Validate that PRQ < CRQ
     if (input$PRQ >= input$CRQ) {
       showModal(modalDialog(

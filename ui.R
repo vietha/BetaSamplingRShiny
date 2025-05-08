@@ -3,6 +3,7 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(shinycssloaders)
 
 shinyUI(fluidPage(
   titlePanel("Sampling Plans for Compositional Data"),

@@ -224,7 +224,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  
+  # The UI of tabs on the right screen
   output$dynamicTabs <- renderUI({
     tabs <- list(
       tabPanel("Acceptance Plan", 
@@ -258,14 +258,15 @@ shinyServer(function(input, output, session) {
       ),
       
       tabPanel("Parameter Estimation", 
-                br(), 
-                fileInput("file", "Upload Dataset", 
-                          accept = c(".csv", ".txt")),
-               DTOutput("dataPreview"),
-               br(),
-               h4("Estimated value of theta"),
-               textOutput("theta")),
-      
+               # Inform user about selected unit
+               br(), 
+               uiOutput("uomInfo"),
+               br(), 
+               fileInput("file", "Upload Dataset", accept = c(".csv", ".txt")),
+               #h4("Estimated value of theta"),
+               uiOutput("thetaEST"),
+               uiOutput("dataPreviewPanel")
+      ),
       tabPanel("Help",
                tags$iframe(
                  src = "help_page.html",  # must be inside www/
@@ -278,31 +279,55 @@ shinyServer(function(input, output, session) {
    
   })
   
+  # show the table of uploaded data for theta estimated
+  output$dataPreviewPanel <- renderUI({
+    req(input$file)
+    tagList(
+      h5("Preview of uploaded data"),
+      wellPanel(
+        style = "background-color: #f9f9f9; border: 1px solid #ddd;",
+        DTOutput("dataPreview")
+      )
+    )
+  })
   output$dataPreview <- renderDT({
     req(input$file)
     df <- read.csv(input$file$datapath)
     datatable(df, options = list(pageLength = 10))
   })
   
-  output$theta=renderText({
+  output$uomInfo <- renderUI({
+    req(input$uom)
+    unit_label <- if (input$uom == "custom") input$custom_uom_label else input$uom
+    
+    HTML(paste0(
+      "<b>Current unit of measurement:</b> ", unit_label, "<br>",
+      "<span style='color:red'><b>⚠ Please ensure this unit matches your uploaded data!</b></span>"
+    ))
+  })
   
-  req(input$file)
-  df <- read.csv(input$file$datapath)
-  
-  uom_mapping <- dplyr::case_when(
-    input$uom == "proportion" ~ 1,
-    input$uom == "custom" ~ as.double(input$custom_uom_mapping),
-    input$uom == "parts per hundred (%)" ~ 100,
-    input$uom == "parts per million (ppm)" ~ 1e6,
-    input$uom == "parts per billion (ppb)" ~ 1e9,
-  )
-  
-  bdata <- data.frame(y = df[,1]/uom_mapping, shape1 = exp(0),
-                                     shape2 = exp(1))
-     
-       fit1 <- vglm(y ~ 1, betaff, data = bdata, trace = FALSE)
-       theta=Coef(fit1)[2] # Useful for intercept-only models
-       theta
-})
-  
+  output$thetaEST=renderUI({
+    req(input$file)
+    df <- read.csv(input$file$datapath)
+
+    uom_mapping <- dplyr::case_when(
+      input$uom == "proportion" ~ 1,
+      input$uom == "custom" ~ as.double(input$custom_uom_mapping),
+      input$uom == "parts per hundred (%)" ~ 100,
+      input$uom == "parts per million (ppm)" ~ 1e6,
+      input$uom == "parts per billion (ppb)" ~ 1e9,)
+    bdata <- data.frame(y = df[,1]/uom_mapping, shape1 = exp(0), shape2 = exp(1))
+    fit1 <- vglm(y ~ 1, betaff, data = bdata, trace = FALSE)
+    theta=Coef(fit1)[2] # Useful for intercept-only models
+    #theta
+    tags$div(
+      style = "text-align: center; margin-top: 20px;",
+      tags$h4("Estimated value of theta:"),
+      tags$div(
+        style = "font-size: 1.8em; font-weight: bold; color: #2c3e50;",
+        paste("θ =", theta)
+      )
+    )
+  })
+
 })

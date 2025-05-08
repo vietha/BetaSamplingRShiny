@@ -9,9 +9,10 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
                               me_adjust_enabled = NA, me_type = NA, 
                               r = NA, R = NA, sdtype = "known", 
                               eval_plan = NULL) {
+  req(SL, theta)
   distribution <- "Beta"
   limtype <- match.arg(limtype)
-  
+  #print(SL)
   set.seed(123)
   if (distribution == "Beta") {
     LSL = USL = NULL
@@ -116,120 +117,222 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  observeEvent(input$find_plan, {
+  plan_result <- reactive({
+    req(input$sl_value, input$theta_value, input$PRQ, input$CRQ,
+        input$PR, input$CR, input$sl_type, input$uom)
+
+    # If custom UOM selected, check extra fields
+    if (input$uom == "custom") {
+      req(input$custom_uom_mapping, input$custom_uom_label)
+    }
+
     shinyjs::show("loading_div")
-    shinyjs::hide("find_plan")
     shinyjs::hide("planOptTable")
     shinyjs::hide("ocTabs")
-    shinyjs::hide("found_plan") 
+    shinyjs::hide("found_plan")
     processing(TRUE)
-    
-    # Start count processing time
+
     start_time <- Sys.time()
 
-    #details of plan to be evaluated
     eval_plan <- list(
       meval = input$meval,
       keval = input$keval,
       compare_plan_checked = input$compare_plan
     )
-  
-    # Parameter reading and plan calculation remains the same
-    SL= input$sl_value #divide by uom
-    theta= input$theta_value
-    sigma= input$sigma_value #not needed
-    p1= input$PRQ/100
-    p2= input$CRQ/100
-    alpha= input$PR
-    beta= input$CR
-    #distribution = input$distribution
-    #sdtype = tolower(input$sdtype) # This set sigma/theta known or unknown
-    sdtype="known"
-    limtype= tolower(input$sl_type)
-    # me_adjust_enabled = input$me_toggle
-    # me_type = input$me_type
-    # r = input$me_r
-    # R = input$me_R
-    
+
+    SL <- input$sl_value
+    theta <- input$theta_value
+    sigma <- input$sigma_value
+    p1 <- input$PRQ / 100
+    p2 <- input$CRQ / 100
+    alpha <- input$PR
+    beta <- input$CR
+    sdtype <- "known"
+    limtype <- tolower(input$sl_type)
+
     uom_mapping <- dplyr::case_when(
       input$uom == "proportion" ~ 1,
       input$uom == "custom" ~ as.double(input$custom_uom_mapping),
       input$uom == "parts per hundred (%)" ~ 100,
       input$uom == "parts per million (ppm)" ~ 1e6,
       input$uom == "parts per billion (ppb)" ~ 1e9,
-      )
-    
-    if (input$uom == 'custom'){
-      uom = input$custom_uom_label
-      uom_mapping = input$custom_uom_mapping
+    )
+
+    if (input$uom == 'custom') {
+      uom <- input$custom_uom_label
+      uom_mapping <- input$custom_uom_mapping
     } else {
-      uom=input$uom
+      uom <- input$uom
     }
 
-    SL=SL/uom_mapping
-    
-    # Now find and optimal plan base on input parameters
+    SL <- SL / uom_mapping
+
     opt_plan <- find_optimal_plan(p1, alpha, p2, beta, SL, sigma, theta,
-                                  distribution, limtype, uom, uom_mapping,
+                                  distribution = NULL, limtype, uom, uom_mapping,
                                   sdtype = sdtype, eval_plan = eval_plan)
-    
-    # End count processing time
+
     elapsed_time <- round(difftime(Sys.time(), start_time, units = "secs"), 2)
-    
-    if(is.null(opt_plan)) {
-      # Inform the user via a modal dialog (or update a text output if preferred)
+
+    list(opt_plan = opt_plan, elapsed_time = elapsed_time)
+  })
+
+  observe({
+    req(plan_result())  # Make sure plan_result is ready
+    result <- plan_result()
+    req(result$opt_plan)  # Optional: also ensure the plan is not NULL
+    opt_plan <- result$opt_plan
+    elapsed_time <- result$elapsed_time
+
+    if (is.null(opt_plan)) {
       showModal(modalDialog(
         title = "No Optimal Plan Found",
-        paste("No optimal plan could be determined based on the input parameters after", 
+        paste("No optimal plan could be determined based on the input parameters after",
               elapsed_time, "seconds."),
         easyClose = TRUE,
         footer = modalButton("OK")
       ))
-      
-      # Reset the UI elements so the user can try again
+
       processing(FALSE)
       shinyjs::hide("loading_div")
-      shinyjs::show("find_plan")
       shinyjs::hide("planOptTable")
       shinyjs::hide("ocTabs")
-      shinyjs::hide("found_plan") 
-    } 
-    else {
-      # Load data from plans
+      shinyjs::hide("found_plan")
+    } else {
       plots <- opt_plan$plots
-      opt_table_data <- opt_plan$opt_table_data 
+      opt_table_data <- opt_plan$opt_table_data
       opt_table_caption <- opt_plan$opt_table_caption
-      
-      # Create separate outputs for each plot
+
       output$ocPlot1 <- renderPlot({ plots$p1 })
       output$ocPlot2 <- renderPlot({ plots$p2 })
-      #output$ocPlot3 <- renderPlot({ plots$p3 })
-      
+
       output$planOptTable <- renderTable({
-        #print(opt_table_data)
         opt_table_data
       }, rownames = FALSE, digits = 3, caption = paste("An optimal plan was found after", elapsed_time, "seconds."))
-      
-      # Optimal plan found
-      output$plan_message <- renderText({
-        opt_table_caption
-      })
-      
+
+      output$plan_message <- renderText({ opt_table_caption })
+
       processing(FALSE)
       shinyjs::hide("loading_div")
-      shinyjs::show("find_plan")
       shinyjs::show("planOptTable")
       shinyjs::show("ocTabs")
-      shinyjs::show("found_plan")  # Show the message div
+      shinyjs::show("found_plan")
     }
   })
+  
+  # observeEvent(input$find_plan, {
+  #   shinyjs::show("loading_div")
+  #   shinyjs::hide("find_plan")
+  #   shinyjs::hide("planOptTable")
+  #   shinyjs::hide("ocTabs")
+  #   shinyjs::hide("found_plan")
+  #   processing(TRUE)
+  # 
+  #   # Start count processing time
+  #   start_time <- Sys.time()
+  # 
+  #   #details of plan to be evaluated
+  #   eval_plan <- list(
+  #     meval = input$meval,
+  #     keval = input$keval,
+  #     compare_plan_checked = input$compare_plan
+  #   )
+  # 
+  #   # Parameter reading and plan calculation remains the same
+  #   SL= input$sl_value #divide by uom
+  #   theta= input$theta_value
+  #   sigma= input$sigma_value #not needed
+  #   p1= input$PRQ/100
+  #   p2= input$CRQ/100
+  #   alpha= input$PR
+  #   beta= input$CR
+  #   #distribution = input$distribution
+  #   #sdtype = tolower(input$sdtype) # This set sigma/theta known or unknown
+  #   sdtype="known"
+  #   limtype= tolower(input$sl_type)
+  #   # me_adjust_enabled = input$me_toggle
+  #   # me_type = input$me_type
+  #   # r = input$me_r
+  #   # R = input$me_R
+  # 
+  #   uom_mapping <- dplyr::case_when(
+  #     input$uom == "proportion" ~ 1,
+  #     input$uom == "custom" ~ as.double(input$custom_uom_mapping),
+  #     input$uom == "parts per hundred (%)" ~ 100,
+  #     input$uom == "parts per million (ppm)" ~ 1e6,
+  #     input$uom == "parts per billion (ppb)" ~ 1e9,
+  #     )
+  # 
+  #   if (input$uom == 'custom'){
+  #     uom = input$custom_uom_label
+  #     uom_mapping = input$custom_uom_mapping
+  #   } else {
+  #     uom=input$uom
+  #   }
+  # 
+  #   SL=SL/uom_mapping
+  # 
+  #   # Now find and optimal plan base on input parameters
+  #   opt_plan <- find_optimal_plan(p1, alpha, p2, beta, SL, sigma, theta,
+  #                                 distribution, limtype, uom, uom_mapping,
+  #                                 sdtype = sdtype, eval_plan = eval_plan)
+  # 
+  #   # End count processing time
+  #   elapsed_time <- round(difftime(Sys.time(), start_time, units = "secs"), 2)
+  # 
+  #   if(is.null(opt_plan)) {
+  #     # Inform the user via a modal dialog (or update a text output if preferred)
+  #     showModal(modalDialog(
+  #       title = "No Optimal Plan Found",
+  #       paste("No optimal plan could be determined based on the input parameters after",
+  #             elapsed_time, "seconds."),
+  #       easyClose = TRUE,
+  #       footer = modalButton("OK")
+  #     ))
+  # 
+  #     # Reset the UI elements so the user can try again
+  #     processing(FALSE)
+  #     shinyjs::hide("loading_div")
+  #     shinyjs::show("find_plan")
+  #     shinyjs::hide("planOptTable")
+  #     shinyjs::hide("ocTabs")
+  #     shinyjs::hide("found_plan")
+  #   }
+  #   else {
+  #     # Load data from plans
+  #     plots <- opt_plan$plots
+  #     opt_table_data <- opt_plan$opt_table_data
+  #     opt_table_caption <- opt_plan$opt_table_caption
+  # 
+  #     # Create separate outputs for each plot
+  #     output$ocPlot1 <- renderPlot({ plots$p1 })
+  #     output$ocPlot2 <- renderPlot({ plots$p2 })
+  #     #output$ocPlot3 <- renderPlot({ plots$p3 })
+  # 
+  #     output$planOptTable <- renderTable({
+  #       #print(opt_table_data)
+  #       opt_table_data
+  #     }, rownames = FALSE, digits = 3, caption = paste("An optimal plan was found after", elapsed_time, "seconds."))
+  # 
+  #     # Optimal plan found
+  #     output$plan_message <- renderText({
+  #       opt_table_caption
+  #     })
+  # 
+  #     processing(FALSE)
+  #     shinyjs::hide("loading_div")
+  #     shinyjs::show("find_plan")
+  #     shinyjs::show("planOptTable")
+  #     shinyjs::show("ocTabs")
+  #     shinyjs::show("found_plan")  # Show the message div
+  #   }
+  # })
   
   # The UI of tabs on the right screen
   output$dynamicTabs <- renderUI({
     tabs <- list(
       tabPanel("Acceptance Plan", 
                br(), 
-               actionButton("find_plan", "Find Plan"),
+               #actionButton("find_plan", "Find Plan"),
                hidden(
                  div(id = "found_plan", style = "text-align: center; margin-top: 20px;",
                      h5(textOutput("plan_message"))

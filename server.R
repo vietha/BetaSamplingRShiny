@@ -122,6 +122,28 @@ shinyServer(function(input, output, session) {
     req(input$sl_value, input$theta_value, input$PRQ, input$CRQ,
         input$PR, input$CR, input$sl_type, input$uom)
 
+    # Validate that PRQ < CRQ
+    if (input$PRQ >= input$CRQ) {
+      showModal(modalDialog(
+        title = "Input Error",
+        "PRQ must be less than CRQ.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(NULL)  # Exit reactive early
+    }
+    
+    # Validate that SL > 0
+    if (input$sl_value <= 0) {
+      showModal(modalDialog(
+        title = "Input Error",
+        "Specification Limit (SL) must be greater than 0.",
+        easyClose = TRUE,
+        footer = modalButton("OK")
+      ))
+      return(NULL)  # Exit reactive early
+    }
+    
     # If custom UOM selected, check extra fields
     if (input$uom == "custom") {
       req(input$custom_uom_mapping, input$custom_uom_label)

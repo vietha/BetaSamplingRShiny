@@ -12,12 +12,12 @@ shinyUI(fluidPage(
     sidebarPanel(
       
       h4("Evaluated Plan"),
-
       numericInput("meval", "Sample size (m) ", value = 10, min = 0, max = 100, step = 1),
       numericInput("keval", "Acceptability constant (k) ", value = 1.5, min = 0.5, max = 3, step = 0.005),
       
-      h4("Designed Plan"),
+      tags$hr(style = "border-top: 1px solid #aaa; margin: 15px 0;"),
       
+      h4("Designed Plan"),
       numericInput("PRQ", "PRQ (Producer's Risk Quality %) ", value = 2.5, min = 0, max = 100, step = 0.5),
       #sliderInput("PR", "PR (Producer's Risk)", min = 0, max = 0.10, value = 0.05, step = 0.01),
       numericInput("CRQ", "CRQ (Consumer's Risk Quality %) ", value = 10, min = 0, max = 100, step = 0.5),
@@ -63,14 +63,7 @@ shinyUI(fluidPage(
       #),
       #radioButtons("sdtype", label = NULL, choices = c("Known", "Unknown"), inline = TRUE, selected = "Known"),
       
-      # h4("Measurement Error Adjustment"),
-      # switchInput("me_toggle", label = "Enable Adjustment", value = FALSE),
-      # conditionalPanel(
-      #   condition = "input.me_toggle == true",
-      #   radioButtons("me_type", "Error Type", choices = c("Additive", "Multiplicative")),
-      #   numericInput("me_r", "Repeatability (r)", value = 0.01, min = 0, step = 0.005),
-      #   numericInput("me_R", "Reproducibility (R)", value = 0.03, min = 0, step = 0.005)
-      # )
+
       
       checkboxInput("compare_plan", "Compare with evaluated plan", value = FALSE),
     ),
@@ -80,4 +73,3 @@ shinyUI(fluidPage(
     )
   )
 ))
-

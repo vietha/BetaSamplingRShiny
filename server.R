@@ -267,7 +267,9 @@ shinyServer(function(input, output, session) {
                uiOutput("thetaEST"),
                uiOutput("dataPreviewPanel")
       ),
-      tabPanel("Help", uiOutput("helpContent"))
+      tabPanel("Help",
+               withSpinner(uiOutput("helpContent"), type = 1, color = "#adb5bd")
+      )
     )
   
    do.call(tabsetPanel, c(id = "tabs", tabs))
@@ -278,7 +280,11 @@ shinyServer(function(input, output, session) {
   output$helpContent <- renderUI({
     tmp <- tempfile(fileext = ".html")
     rmarkdown::render("help_page.Rmd", output_file = tmp, quiet = TRUE)
-    includeHTML(tmp)
+    
+    tags$iframe(
+      srcdoc = paste(readLines(tmp, warn = FALSE), collapse = "\n"),
+      style = "width:100%; height:800px; border:none;"
+    )
   })
   
   # show the table of uploaded data for theta estimated

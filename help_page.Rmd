@@ -3,6 +3,7 @@ title: "Sampling Plans"
 output:
   html_document:
     mathjax: default
+    self_contained: true
 ---
 
 Compositional fractions can be modeled using the beta distribution, which is commonly used as a **prior distribution for the proportion nonconforming** in quality control literature. However, designing **sampling inspection plans** based on the beta distribution can be highly useful in food quality assurance, where many quality characteristics are naturally expressed as fractions.

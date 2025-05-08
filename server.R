@@ -255,24 +255,6 @@ shinyServer(function(input, output, session) {
                h4(""),
                sliderInput("PR", "PR (Producer's Risk)", min = 0, max = 0.10, value = 0.05, step = 0.01),
                sliderInput("CR", "CR (Consumer's Risk)", min = 0, max = 0.20, value = 0.10, step = 0.01),
-               
-               selectInput(
-                 "uom", "Units of Measurement:",
-                 c(
-                   "proportion",
-                   "parts per hundred (%)",
-                   "parts per million (ppm)",
-                   "parts per billion (ppb)",
-                   "parts per trillion (ppt)",
-                   "custom"
-                 )
-               ),
-               # if custom, define label and mapping
-               conditionalPanel(
-                 condition = "input.uom == 'custom'",
-                 textInput("custom_uom_label", "Unit label", value = "microgram per 100g (μg/100g)"),
-                 numericInput("custom_uom_mapping", "Mapping from 0-1 scale to measurement scale:", value = 1e8)
-               ),
       ),
       
       tabPanel("Parameter Estimation", 

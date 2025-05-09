@@ -92,7 +92,7 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
 shinyServer(function(input, output, session) { 
   
   # Check required packages
-  required_pkg <- c("shiny", "shinyWidgets", "shinycssloaders",
+  required_pkg <- c("shiny", "shinycssloaders",
                     "VGAM", "AccSamplingDesign")
   
   missing_pkgs <- required_pkg[!sapply(required_pkg, requireNamespace, quietly = TRUE)]
@@ -114,7 +114,7 @@ shinyServer(function(input, output, session) {
     if (input$compare_plan) {
       if (packageVersion("AccSamplingDesign") < "0.0.2") {
         showModal(modalDialog(
-          title = "Require package update!",
+          title = "Require Package Update!",
           "Please update the 'AccSamplingDesign' package to version 0.0.2 or higher to use this feature.",
           easyClose = TRUE,
           footer = modalButton("OK")

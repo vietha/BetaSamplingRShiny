@@ -1,7 +1,7 @@
 # Load libraries
 library(shiny)
 #library(shinyjs)
-require(shinyWidgets)
+#require(shinyWidgets)
 require(shinycssloaders)
 
 shinyUI(fluidPage(

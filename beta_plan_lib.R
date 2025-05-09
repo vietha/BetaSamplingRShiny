@@ -40,8 +40,8 @@ plot_OC_curve <- function(plan, uom, uom_mapping,
     labs(title = paste("OC Curve by Nonconforming Proportion (m =", m, "k =", round(plan$k,3), ")"),
          x = "Percentage Nonconforming (%)", 
          y = "Probability of Acceptance (%)") +
-    theme_minimal() +
-    theme(legend.position = "bottom")
+    theme_minimal()
+    
   
   #uom
   # Second OC Curve: Average Level (ppm) vs Probability of Acceptance
@@ -52,8 +52,7 @@ plot_OC_curve <- function(plan, uom, uom_mapping,
     labs(title = paste("OC Curve by Mean Levels (m =", m, "k =", round(plan$k,3), ")"),
          x = paste("Mean Level -", uom),
          y = "Probability of Acceptance (%)") +
-    theme_minimal() +
-    theme(legend.position = "bottom")
+    theme_minimal()
   
   # Third chart
   #plot3 <- plot_beta_distributions(p1, p2, limit, theta, limtype) 
@@ -73,12 +72,18 @@ plot_OC_curve <- function(plan, uom, uom_mapping,
       geom_line(aes(x = 100 * eval_p_seq, 
                     y = 100 * eval_pa_seq, 
                     color = "Evaluated Plan"),
-                linetype = "dashed", linewidth = 1)
+                linetype = "longdash", linewidth = 1) +
+      theme(legend.position = "bottom")
+    
     plot2 <- plot2 +
       geom_line(aes(x = uom_mapping*eval_mu_seq, 
                     y = 100 * eval_pa_seq, 
                     color = "Evaluated Plan"),
-                linetype = "dashed", linewidth = 1)
+                linetype = "longdash", linewidth = 1) + 
+      theme(legend.position = "bottom")
+  } else { # Not show ledgend
+    plot1 <- plot1 + theme(legend.position = "none")
+    plot2 <- plot2 + theme(legend.position = "none")
   }
   
   return(list(p1 = plot1, p2 = plot2))#, p3 = plot3))

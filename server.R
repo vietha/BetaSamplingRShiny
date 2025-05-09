@@ -92,7 +92,8 @@ find_optimal_plan <- function(p1, alpha, p2, beta, SL, sigma = NA, theta = NA,
 shinyServer(function(input, output, session) { 
   
   # Check required packages
-  required_pkg <- c("shiny", "shinyjs", "shinyWidgets", "VGAM", "AccSamplingDesign")
+  required_pkg <- c("shiny", "shinyWidgets", "shinycssloaders",
+                    "VGAM", "AccSamplingDesign")
   
   missing_pkgs <- required_pkg[!sapply(required_pkg, requireNamespace, quietly = TRUE)]
   
@@ -112,7 +113,13 @@ shinyServer(function(input, output, session) {
   observeEvent(input$compare_plan, {
     if (input$compare_plan) {
       if (packageVersion("AccSamplingDesign") < "0.0.2") {
-        shinyjs::alert("Please update the 'AccSamplingDesign' package to version 0.0.2 or higher to use this feature.")
+        showModal(modalDialog(
+          title = "Require package update!",
+          "Please update the 'AccSamplingDesign' package to version 0.0.2 or higher to use this feature.",
+          easyClose = TRUE,
+          footer = modalButton("OK")
+        ))
+        #shinyjs::alert("Please update the 'AccSamplingDesign' package to version 0.0.2 or higher to use this feature.")
         updateCheckboxInput(session, "compare_plan", value = FALSE)
       }
     }
@@ -227,7 +234,7 @@ shinyServer(function(input, output, session) {
       ))
 
       processing(FALSE)
-      shinyjs::hide("loading_div")
+      #shinyjs::hide("loading_div")
       # shinyjs::hide("planOptTable")
       # shinyjs::hide("ocTabs")
       # shinyjs::hide("found_plan")
@@ -246,10 +253,10 @@ shinyServer(function(input, output, session) {
       output$plan_message <- renderText({ opt_table_caption })
 
       processing(FALSE)
-      shinyjs::hide("loading_div")
-      shinyjs::show("planOptTable")
-      shinyjs::show("ocTabs")
-      shinyjs::show("found_plan")
+      #shinyjs::hide("loading_div")
+      # shinyjs::show("planOptTable")
+      # shinyjs::show("ocTabs")
+      # shinyjs::show("found_plan")
     }
   })
   
@@ -367,7 +374,7 @@ shinyServer(function(input, output, session) {
       tabPanel("Acceptance Plan", 
                br(), 
                #actionButton("find_plan", "Find Plan"),
-               hidden(
+               #hidden(
                  div(id = "found_plan", style = "text-align: center; margin-top: 20px;",
                      h5(textOutput("plan_message"))
                  ),
@@ -381,11 +388,11 @@ shinyServer(function(input, output, session) {
                        tabPanel("Plot 2", plotOutput("ocPlot2"))#,
                        #tabPanel("Plot 3", plotOutput("ocPlot3"))
                      )
-                 ),
-                 div(id = "loading_div",
-                     h5("Finding an optimal plan ...", id = "loading_text"),
-                     tags$div(class = "spinner-border", role = "status")
-                 )
+                 #)
+                 # div(id = "loading_div",
+                 #     h5("Finding an optimal plan ...", id = "loading_text"),
+                 #     tags$div(class = "spinner-border", role = "status")
+                 # )
                )
       ),
       tabPanel("Plan Settings",

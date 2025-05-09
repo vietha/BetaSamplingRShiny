@@ -1,13 +1,12 @@
-
 # Load libraries
 library(shiny)
-library(shinyjs)
-library(shinyWidgets)
-library(shinycssloaders)
+#library(shinyjs)
+require(shinyWidgets)
+require(shinycssloaders)
 
 shinyUI(fluidPage(
   titlePanel("Sampling Plans for Compositional Data"),
-  useShinyjs(),  # Enable shinyjs
+  #useShinyjs(),  # Enable shinyjs
   
   sidebarLayout(
     sidebarPanel(
